@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Smart Mall DApp</title>
   <base href="/smartmall-dapp1/">
   <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, doc, collection, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-    // TODO: Thay thế bằng config của bạn
+    import {
+      getFirestore, doc, collection, getDoc, setDoc,
+      updateDoc, onSnapshot, arrayUnion
+    } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    // TODO: điền config Firebase của bạn
     const firebaseConfig = {
       apiKey: "YOUR_API_KEY",
       authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -23,63 +26,83 @@
     window.db = db;
   </script>
   <style>
-    body { background:#0a1a2f; color:#fff; font-family:Arial,sans-serif; margin:0; padding-bottom:60px; }
-    #app { display: none; }
-    nav { position:fixed; bottom:0; left:0; right:0; display:flex; background:#162447; border-top:2px solid #21e6c1; }
-    .nav-btn { flex:1; padding:10px; text-align:center; color:#fff; cursor:pointer; }
-    .nav-btn.active { background:#21e6c1; color:#0a1a2f; }
-    section { display:none; padding:20px; margin-top:50px; }
-    section.show { display:block; }
-    button, input { width:100%; padding:8px; margin:6px 0; border:none; border-radius:4px; }
-    button { background:#21e6c1; color:#0a1a2f; font-weight:bold; cursor:pointer; }
-    .list-item { background:#1f4068; padding:10px; margin:6px 0; border-radius:4px; display:flex; justify-content:space-between; align-items:center; }
-    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
-    .modal.show { display:flex; }
-    .modal-content { background:#162447; padding:20px; border-radius:8px; width:90%; max-width:400px; }
-    .close-btn { background:#d03232; color:#fff; margin-top:10px; }
+    body{background:#0a1a2f;color:#fff;font-family:Arial,sans-serif;margin:0;padding-bottom:60px}
+    #app{display:none}
+    nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#162447;border-top:2px solid #21e6c1}
+    .nav-btn{flex:1;padding:10px;text-align:center;color:#fff;cursor:pointer}
+    .nav-btn.active{background:#21e6c1;color:#0a1a2f}
+    section{display:none;padding:20px;margin-top:50px}
+    section.show{display:block}
+    button,input{width:100%;padding:8px;margin:6px 0;border:none;border-radius:4px}
+    button{background:#21e6c1;color:#0a1a2f;font-weight:bold;cursor:pointer}
+    .list-item{background:#1f4068;padding:10px;margin:6px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center}
+    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center}
+    .modal.show{display:flex}
+    .modal-content{background:#162447;padding:20px;border-radius:8px;width:90%;max-width:400px}
+    .close-btn{background:#d03232;color:#fff;margin-top:10px}
+    .notifications{background:#1f4068;padding:10px;border-radius:4px;margin-bottom:10px}
+    .notifications h3{margin:0 0 8px;color:#21e6c1}
+    .notifications ul{list-style:disc inside;margin:0;padding:0}
+    .notifications li{margin:4px 0}
+    .section-list{display:flex;flex-direction:column;gap:10px}
   </style>
 </head>
 <body>
   <!-- LOGIN -->
   <section id="login" class="show">
     <h2>🔑 Đăng nhập</h2>
-    <input id="usernameInput" placeholder="Username" />
+    <input id="usernameInput" placeholder="Username"/>
     <button id="loginBtn">Đăng nhập</button>
   </section>
+
   <!-- APP -->
   <div id="app">
     <nav>
-      <div id="tab-home" class="nav-btn active">Home</div>
-      <div id="tab-session" class="nav-btn">Phiên</div>
-      <div id="tab-nft" class="nav-btn">NFT</div>
-      <div id="tab-wallet" class="nav-btn">Ví</div>
-      <div id="tab-profile" class="nav-btn">Profile</div>
+      <div id="tab-home" class="nav-btn active">🏠 Trang chủ</div>
+      <div id="tab-session" class="nav-btn">⏱️ Phiên</div>
+      <div id="tab-nft" class="nav-btn">🧾 NFT</div>
+      <div id="tab-wallet" class="nav-btn">💰 Ví</div>
+      <div id="tab-profile" class="nav-btn">👤 Thông tin</div>
     </nav>
-    <section id="home">
-      <h2>Chào bạn, <span id="labelUsername"></span></h2>
-      <button id="btnRegister">Đăng ký phiên (20k)</button>
-      <ul id="listSessions"></ul>
+
+    <!-- HOME -->
+    <section id="home" class="show">
+      <div class="notifications">
+        <h3>Thông báo Admin</h3>
+        <ul id="adminNotifications"></ul>
+      </div>
+      <h2>📢 Chào mừng <span id="labelUsername"></span> đến với Smart Mall!</h2>
     </section>
+
+    <!-- SESSION -->
     <section id="session">
-      <h2>Danh sách Phiên</h2>
-      <ul id="sessionList"></ul>
+      <h2>🕒 Phiên giao dịch</h2>
+      <div id="sessionList" class="section-list"></div>
     </section>
+
+    <!-- NFT -->
     <section id="nft">
-      <h2>Marketplace NFT</h2>
-      <ul id="productList"></ul>
+      <h2>🛒 Marketplace NFT</h2>
+      <div id="marketList" class="section-list">Loading...</div>
+      <h2>🧾 NFT của tôi</h2>
+      <div id="myNFTList" class="section-list">Chưa có sản phẩm.</div>
+      <p>Tổng chi tiêu: <b id="totalSpent">0</b> SMP</p>
     </section>
+
+    <!-- WALLET -->
     <section id="wallet">
-      <h2>Ví của bạn</h2>
-      <p>Số dư: <span id="walletBalance"></span> SML</p>
+      <h2>💰 Ví của bạn</h2>
+      <p>Số dư: <b id="walletBalance">0</b> SMP</p>
       <button id="btnDeposit">Nạp ví</button>
       <button id="btnWithdraw">Rút ví</button>
-      <ul id="walletHistory"></ul>
+      <div id="walletHistory" class="section-list"></div>
     </section>
+
+    <!-- PROFILE -->
     <section id="profile">
-      <h2>Profile</h2>
-      <p>Username: <span id="profileUsername"></span></p>
-      <p>Đăng ký: <span id="countRegistrations"></span> lần</p>
-      <p>Số NFT sở hữu: <span id="countNFT"></span></p>
+      <h2>👤 Thông tin</h2>
+      <p>Username: <b id="profileUsername"></b></p>
+      <p>Đã đăng ký: <b id="countRegistrations">0</b> phiên</p>
     </section>
   </div>
 
@@ -87,7 +110,7 @@
   <div id="depositModal" class="modal">
     <div class="modal-content">
       <h3>Nạp ví</h3>
-      <input id="inputDeposit" type="number" placeholder="Số tiền" />
+      <input id="inputDeposit" type="number" placeholder="Số tiền"/>
       <button id="confirmDeposit">Xác nhận</button>
       <button id="closeDeposit" class="close-btn">Đóng</button>
     </div>
@@ -95,7 +118,7 @@
   <div id="withdrawModal" class="modal">
     <div class="modal-content">
       <h3>Rút ví</h3>
-      <input id="inputWithdraw" type="number" placeholder="Số tiền" />
+      <input id="inputWithdraw" type="number" placeholder="Số tiền"/>
       <button id="confirmWithdraw">Xác nhận</button>
       <button id="closeWithdraw" class="close-btn">Đóng</button>
     </div>
@@ -103,17 +126,24 @@
   <div id="sellModal" class="modal">
     <div class="modal-content">
       <h3>Đăng bán NFT</h3>
-      <input id="inputSellPrice" type="number" placeholder="Giá bán" />
+      <input id="inputSellPrice" type="number" placeholder="Giá bán"/>
       <button id="confirmSell">Xác nhận</button>
       <button id="closeSell" class="close-btn">Đóng</button>
     </div>
   </div>
 
-  <!-- SCRIPT -->
   <script type="module">
     import { doc, collection, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     const db = window.db;
-    let currentUsername = "", state = { walletBalance: 0, registrations: [], userNFT: [], walletHistory: [] };
+    let currentUsername = '';
+    let state = {
+      walletBalance: 0,
+      registrations: [],
+      userNFT: [],
+      walletHistory: [],
+      sessions: [],
+      products: []
+    };
 
     // UI elements
     const loginSection = document.getElementById('login');
@@ -128,130 +158,203 @@
     };
     const labelUsername = document.getElementById('labelUsername');
     const profileUsername = document.getElementById('profileUsername');
-    const btnRegister = document.getElementById('btnRegister');
-    const listSessions = document.getElementById('listSessions');
-    const productList = document.getElementById('productList');
+    const adminNotifications = document.getElementById('adminNotifications');
+    const sessionList = document.getElementById('sessionList');
+    const marketList = document.getElementById('marketList');
+    const myNFTList = document.getElementById('myNFTList');
+    const totalSpentEl = document.getElementById('totalSpent');
     const walletBalanceEl = document.getElementById('walletBalance');
     const walletHistoryEl = document.getElementById('walletHistory');
     const countRegs = document.getElementById('countRegistrations');
-    const countNFT = document.getElementById('countNFT');
+    const btnDeposit = document.getElementById('btnDeposit');
+    const btnWithdraw = document.getElementById('btnWithdraw');
     const depositModal = document.getElementById('depositModal');
+    const withdrawModal = document.getElementById('withdrawModal');
+    const sellModal = document.getElementById('sellModal');
     const inputDeposit = document.getElementById('inputDeposit');
     const confirmDeposit = document.getElementById('confirmDeposit');
     const closeDeposit = document.getElementById('closeDeposit');
-    const withdrawModal = document.getElementById('withdrawModal');
     const inputWithdraw = document.getElementById('inputWithdraw');
     const confirmWithdraw = document.getElementById('confirmWithdraw');
     const closeWithdraw = document.getElementById('closeWithdraw');
-    const sellModal = document.getElementById('sellModal');
     const inputSellPrice = document.getElementById('inputSellPrice');
     const confirmSell = document.getElementById('confirmSell');
     const closeSell = document.getElementById('closeSell');
+    let sellingId = null;
 
     // Chuyển tab
-    tabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-        tabs.forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        Object.values(sections).forEach(s => s.classList.remove('show'));
-        sections[tab.id.replace('tab-', '')].classList.add('show');
+    tabs.forEach((tab, idx) => tab.addEventListener('click', () => {
+      tabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      Object.keys(sections).forEach((k,i) => {
+        if(i===idx) sections[k].classList.add('show'); else sections[k].classList.remove('show');
       });
-    });
+    }));
 
-    // Đăng nhập & init real-time
+    // Đăng nhập
     document.getElementById('loginBtn').addEventListener('click', async () => {
       const u = document.getElementById('usernameInput').value.trim();
       if (!u) return alert('Nhập username!');
-      currentUsername = u; labelUsername.innerText = u; profileUsername.innerText = u;
-      // Ẩn login, hiện app
+      currentUsername = u;
+      labelUsername.innerText = u;
+      profileUsername.innerText = u;
       loginSection.classList.remove('show');
       appDiv.style.display = 'block';
       sections.home.classList.add('show');
 
       const userRef = doc(db, 'users', u);
-      // Lắng nghe user
       onSnapshot(userRef, snap => {
-        if (snap.exists()) { state = { ...state, ...snap.data() }; updateUI(); }
-      });
-      const initial = await getDoc(userRef);
-      if (!initial.exists()) {
-        state.walletBalance = 1000000;
-        await setDoc(userRef, state);
-      }
-      // Lắng nghe products
-      onSnapshot(collection(db, 'products'), snap => renderProducts(snap.docs));
-    });
-
-    // Render & actions
-    function renderSessions(regs) {
-      listSessions.innerHTML = '';
-      (regs||[]).forEach(ts => {
-        const li = document.createElement('li');
-        li.textContent = new Date(ts).toLocaleString('vi-VN');
-        listSessions.appendChild(li);
-      });
-    }
-    function renderProducts(docs) {
-      productList.innerHTML = '';
-      docs.forEach(d => {
-        const data = d.data();
-        if (data.status === 'forSale') {
-          const li = document.createElement('li'); li.className = 'list-item';
-          const info = document.createElement('span'); info.textContent = `${data.name} - ${data.price} SML`;
-          const btn = document.createElement('button'); btn.textContent = 'Mua'; btn.onclick = () => buyProduct(d.id);
-          li.append(info, btn); productList.appendChild(li);
+        if (snap.exists()) {
+          const data = snap.data();
+          state.walletBalance = data.walletBalance;
+          state.registrations = data.registrations || [];
+          state.userNFT = data.userNFT || [];
+          state.walletHistory = data.walletHistory || [];
+          updateUI();
         }
       });
-    }
-    btnRegister.addEventListener('click', async () => {
-      if (state.walletBalance < 20000) return alert('Ví không đủ');
-      await updateDoc(doc(db,'users',currentUsername),{
-        walletBalance: state.walletBalance-20000,
-        registrations: arrayUnion(new Date().toISOString())
-      }); alert('Đăng ký thành công');
-    });
-    async function buyProduct(pid) {
-      const prodRef = doc(db,'products',pid);
-      const prodSnap = await getDoc(prodRef); const prod = prodSnap.data();
-      if (state.walletBalance < prod.price) return alert('Ví không đủ');
-      await updateDoc(doc(db,'users',currentUsername),{
-        walletBalance: state.walletBalance-prod.price,
-        userNFT: arrayUnion({ id: pid, name: prod.name, price: prod.price })
+      const init = await getDoc(userRef);
+      if (!init.exists()) {
+        await setDoc(userRef, {
+          walletBalance: 1000000,
+          registrations: [],
+          userNFT: [],
+          walletHistory: []
+        });
+      }
+
+      onSnapshot(collection(db, 'notifications'), snap => renderNotifications(snap.docs));
+      onSnapshot(collection(db, 'sessions'), snap => {
+        state.sessions = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderSessions();
       });
-      await updateDoc(prodRef,{ status:'owned', owner:currentUsername }); alert('Mua thành công');
-    }
-    // Nạp & rút modal
-    document.getElementById('btnDeposit').addEventListener('click',() => depositModal.classList.add('show'));
-    closeDeposit.addEventListener('click',() => depositModal.classList.remove('show'));
-    confirmDeposit.addEventListener('click',async()=>{
-      const amt=parseInt(inputDeposit.value);
-      if (amt>0) await updateDoc(doc(db,'users',currentUsername),{
-        walletBalance: state.walletBalance+amt,
-        walletHistory: arrayUnion({ type:'deposit', amount:amt, date:new Date().toISOString() })
-      }); depositModal.classList.remove('show');
-    });
-    document.getElementById('btnWithdraw').addEventListener('click',() => withdrawModal.classList.add('show'));
-    closeWithdraw.addEventListener('click',() => withdrawModal.classList.remove('show'));
-    confirmWithdraw.addEventListener('click',async()=>{
-      const amt=parseInt(inputWithdraw.value);
-      if (state.walletBalance<amt) return alert('Ví không đủ');
-      await updateDoc(doc(db,'users',currentUsername),{
-        walletBalance: state.walletBalance-amt,
-        walletHistory: arrayUnion({ type:'withdraw', amount:amt, date:new Date().toISOString() })
-      }); withdrawModal.classList.remove('show');
+      onSnapshot(collection(db, 'products'), snap => {
+        state.products = snap.docs.map(d => ({id: d.id, ...d.data()}));
+        renderProducts();
+      });
     });
 
+    // Render
+    function renderNotifications(docs) {
+      adminNotifications.innerHTML = '';
+      const li0 = document.createElement('li');
+      li0.textContent = `Chào mừng ${currentUsername} đến Smart Mall!`;
+      adminNotifications.append(li0);
+      docs.forEach(d => {
+        const li = document.createElement('li');
+        li.textContent = d.data().message;
+        adminNotifications.append(li);
+      });
+    }
+    function renderSessions() {
+      sessionList.innerHTML = '';
+      state.sessions.forEach(s => {
+        const div = document.createElement('div'); div.className = 'list-item';
+        const span = document.createElement('span');
+        const start = s.start.toDate().toLocaleTimeString('vi-VN');
+        const end = s.end.toDate().toLocaleTimeString('vi-VN');
+        span.textContent = `${s.name} (${start} - ${end})`;
+        const btn = document.createElement('button');
+        btn.textContent = 'Đăng ký';
+        btn.onclick = () => registerSession(s.id);
+        div.append(span, btn);
+        sessionList.append(div);
+      });
+    }
+    async function registerSession(id) {
+      const userRef = doc(db, 'users', currentUsername);
+      await updateDoc(userRef, {
+        registrations: arrayUnion({sessionId:id, time:new Date().toISOString()})
+      });
+      alert('Đã đăng ký phiên');
+    }
+    function renderProducts() {
+      marketList.innerHTML = '';
+      myNFTList.innerHTML = '';
+      let spent = 0;
+      state.products.forEach(p => {
+        // Marketplace
+        if (p.status === 'forSale') {
+          const div = document.createElement('div'); div.className = 'list-item';
+          const span = document.createElement('span'); span.textContent = `${p.name} - ${p.price} SMP`;
+          const btn = document.createElement('button'); btn.textContent = 'Mua'; btn.onclick = () => buyProduct(p.id);
+          div.append(span, btn); marketList.append(div);
+        }
+        // My NFTs
+        if (p.owner === currentUsername) {
+          const div = document.createElement('div'); div.className = 'list-item';
+          const span = document.createElement('span'); span.textContent = `${p.name} (Mua: ${p.price})`;
+          const btn = document.createElement('button'); btn.textContent = 'Bán';
+          btn.onclick = () => { sellingId = p.id; sellModal.classList.add('show'); };
+          div.append(span, btn); myNFTList.append(div);
+          spent += p.price;
+        }
+      });
+      if (!myNFTList.hasChildNodes()) myNFTList.textContent = 'Chưa có sản phẩm.';
+      totalSpentEl.textContent = spent;
+    }
+    async function buyProduct(id) {
+      const p = state.products.find(x => x.id === id);
+      if (state.walletBalance < p.price) return alert('Ví không đủ');
+      const userRef = doc(db, 'users', currentUsername);
+      const prodRef = doc(db, 'products', id);
+      await updateDoc(userRef, {
+        walletBalance: state.walletBalance - p.price,
+        userNFT: arrayUnion({id, name: p.name, price: p.price, time: new Date().toISOString()}),
+        walletHistory: arrayUnion({type:'buy', desc: p.name, delta: -p.price, time: new Date().toISOString()})
+      });
+      await updateDoc(prodRef, {status:'owned', owner:currentUsername});
+      alert('Mua thành công');
+    }
+
+    // Deposit & Withdraw
+    btnDeposit.onclick = () => depositModal.classList.add('show');
+    closeDeposit.onclick = () => depositModal.classList.remove('show');
+    confirmDeposit.onclick = async () => {
+      const amt = parseInt(inputDeposit.value);
+      if (amt > 0) {
+        const userRef = doc(db, 'users', currentUsername);
+        await updateDoc(userRef, {
+          walletBalance: state.walletBalance + amt,
+          walletHistory: arrayUnion({type:'deposit', desc:'Nạp ví', delta: amt, time: new Date().toISOString()})
+        });
+        depositModal.classList.remove('show');
+      }
+    };
+    btnWithdraw.onclick = () => withdrawModal.classList.add('show');
+    closeWithdraw.onclick = () => withdrawModal.classList.remove('show');
+    confirmWithdraw.onclick = async () => {
+      const amt = parseInt(inputWithdraw.value);
+      if (state.walletBalance < amt) return alert('Ví không đủ');
+      const userRef = doc(db, 'users', currentUsername);
+      await updateDoc(userRef, {
+        walletBalance: state.walletBalance - amt,
+        walletHistory: arrayUnion({type:'withdraw', desc:'Rút ví', delta: -amt, time: new Date().toISOString()})
+      });
+      withdrawModal.classList.remove('show');
+    };
+
+    // Sell NFT
+    closeSell.onclick = () => sellModal.classList.remove('show');
+    confirmSell.onclick = async () => {
+      const price = parseInt(inputSellPrice.value);
+      if (price > 0 && sellingId) {
+        const prodRef = doc(db, 'products', sellingId);
+        await updateDoc(prodRef, {status:'forSale', price});
+        sellModal.classList.remove('show');
+      }
+    };
+
+    // Update UI common
     function updateUI() {
-      renderSessions(state.registrations);
       walletBalanceEl.innerText = state.walletBalance;
       walletHistoryEl.innerHTML = '';
-      (state.walletHistory||[]).forEach(h=>{
-        const li=document.createElement('li');
-        li.textContent=`${h.type} ${h.amount} - ${new Date(h.date).toLocaleString('vi-VN')}`;
-        walletHistoryEl.appendChild(li);
+      state.walletHistory.forEach(h => {
+        const div = document.createElement('div');
+        div.textContent = `${new Date(h.time).toLocaleString('vi-VN')}: ${h.desc} (${h.delta>0?'+':''}${h.delta})`;
+        walletHistoryEl.append(div);
       });
-      countRegs.innerText = (state.registrations||[]).length;
-      countNFT.innerText = (state.userNFT||[]).length;
+      countRegs.innerText = state.registrations.length;
     }
   </script>
 </body>
