@@ -23,19 +23,20 @@
     window.db = db;
   </script>
   <style>
-    body {background:#0a1a2f;color:#fff;font-family:Arial,sans-serif;margin:0;padding-bottom:60px;}
-    nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#162447;border-top:2px solid #21e6c1;}
-    .nav-btn{flex:1;padding:10px;text-align:center;color:#fff;cursor:pointer;}
-    .nav-btn.active{background:#21e6c1;color:#0a1a2f;}
-    section{display:none;padding:20px;margin-top:50px;}
-    section.show{display:block;}
-    button,input{width:100%;padding:8px;margin:6px 0;border:none;border-radius:4px;}
-    button{background:#21e6c1;color:#0a1a2f;font-weight:bold;cursor:pointer;}
-    .list-item{background:#1f4068;padding:10px;margin:6px 0;border-radius:4px;display:flex;justify-content:space-between;align-items:center;}
-    .modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);justify-content:center;align-items:center;}
-    .modal.show{display:flex;}
-    .modal-content{background:#162447;padding:20px;border-radius:8px;width:90%;max-width:400px;}
-    .close-btn{background:#d03232;color:#fff;margin-top:10px;}
+    body { background:#0a1a2f; color:#fff; font-family:Arial,sans-serif; margin:0; padding-bottom:60px; }
+    #app { display: none; }
+    nav { position:fixed; bottom:0; left:0; right:0; display:flex; background:#162447; border-top:2px solid #21e6c1; }
+    .nav-btn { flex:1; padding:10px; text-align:center; color:#fff; cursor:pointer; }
+    .nav-btn.active { background:#21e6c1; color:#0a1a2f; }
+    section { display:none; padding:20px; margin-top:50px; }
+    section.show { display:block; }
+    button, input { width:100%; padding:8px; margin:6px 0; border:none; border-radius:4px; }
+    button { background:#21e6c1; color:#0a1a2f; font-weight:bold; cursor:pointer; }
+    .list-item { background:#1f4068; padding:10px; margin:6px 0; border-radius:4px; display:flex; justify-content:space-between; align-items:center; }
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); justify-content:center; align-items:center; }
+    .modal.show { display:flex; }
+    .modal-content { background:#162447; padding:20px; border-radius:8px; width:90%; max-width:400px; }
+    .close-btn { background:#d03232; color:#fff; margin-top:10px; }
   </style>
 </head>
 <body>
@@ -81,6 +82,7 @@
       <p>Số NFT sở hữu: <span id="countNFT"></span></p>
     </section>
   </div>
+
   <!-- MODALS -->
   <div id="depositModal" class="modal">
     <div class="modal-content">
@@ -106,37 +108,151 @@
       <button id="closeSell" class="close-btn">Đóng</button>
     </div>
   </div>
+
   <!-- SCRIPT -->
   <script type="module">
     import { doc, collection, getDoc, setDoc, updateDoc, onSnapshot, arrayUnion } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
     const db = window.db;
-    let currentUsername = "", state = { walletBalance: 0, registrations: [], userNFT: [], walletHistory: [] }, selectedNFTId = null;
+    let currentUsername = "", state = { walletBalance: 0, registrations: [], userNFT: [], walletHistory: [] };
 
     // UI elements
-    const loginSection = document.getElementById('login'), appDiv = document.getElementById('app');
+    const loginSection = document.getElementById('login');
+    const appDiv = document.getElementById('app');
     const tabs = document.querySelectorAll('.nav-btn');
-    const sections = { home: document.getElementById('home'), session: document.getElementById('session'), nft: document.getElementById('nft'), wallet: document.getElementById('wallet'), profile: document.getElementById('profile') };
-    const labelUsername = document.getElementById('labelUsername'), profileUsername = document.getElementById('profileUsername');
-    const btnRegister = document.getElementById('btnRegister'), listSessions = document.getElementById('listSessions');
-    const sessionList = document.getElementById('sessionList'), productList = document.getElementById('productList');
-    const walletBalanceEl = document.getElementById('walletBalance'), walletHistoryEl = document.getElementById('walletHistory');
-    const countRegs = document.getElementById('countRegistrations'), countNFT = document.getElementById('countNFT');
-    const depositModal = document.getElementById('depositModal'), inputDeposit = document.getElementById('inputDeposit'), confirmDeposit = document.getElementById('confirmDeposit'), closeDeposit = document.getElementById('closeDeposit');
-    const withdrawModal = document.getElementById('withdrawModal'), inputWithdraw = document.getElementById('inputWithdraw'), confirmWithdraw = document.getElementById('confirmWithdraw'), closeWithdraw = document.getElementById('closeWithdraw');
-    const sellModal = document.getElementById('sellModal'), inputSellPrice = document.getElementById('inputSellPrice'), confirmSell = document.getElementById('confirmSell'), closeSell = document.getElementById('closeSell');
+    const sections = {
+      home: document.getElementById('home'),
+      session: document.getElementById('session'),
+      nft: document.getElementById('nft'),
+      wallet: document.getElementById('wallet'),
+      profile: document.getElementById('profile')
+    };
+    const labelUsername = document.getElementById('labelUsername');
+    const profileUsername = document.getElementById('profileUsername');
+    const btnRegister = document.getElementById('btnRegister');
+    const listSessions = document.getElementById('listSessions');
+    const productList = document.getElementById('productList');
+    const walletBalanceEl = document.getElementById('walletBalance');
+    const walletHistoryEl = document.getElementById('walletHistory');
+    const countRegs = document.getElementById('countRegistrations');
+    const countNFT = document.getElementById('countNFT');
+    const depositModal = document.getElementById('depositModal');
+    const inputDeposit = document.getElementById('inputDeposit');
+    const confirmDeposit = document.getElementById('confirmDeposit');
+    const closeDeposit = document.getElementById('closeDeposit');
+    const withdrawModal = document.getElementById('withdrawModal');
+    const inputWithdraw = document.getElementById('inputWithdraw');
+    const confirmWithdraw = document.getElementById('confirmWithdraw');
+    const closeWithdraw = document.getElementById('closeWithdraw');
+    const sellModal = document.getElementById('sellModal');
+    const inputSellPrice = document.getElementById('inputSellPrice');
+    const confirmSell = document.getElementById('confirmSell');
+    const closeSell = document.getElementById('closeSell');
 
     // Chuyển tab
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         tabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
-        for (let key in sections) sections[key].classList.remove('show');
+        Object.values(sections).forEach(s => s.classList.remove('show'));
         sections[tab.id.replace('tab-', '')].classList.add('show');
       });
     });
 
     // Đăng nhập & init real-time
-    document.getElementById('loginBtn').onclick = async () => {
+    document.getElementById('loginBtn').addEventListener('click', async () => {
       const u = document.getElementById('usernameInput').value.trim();
       if (!u) return alert('Nhập username!');
       currentUsername = u; labelUsername.innerText = u; profileUsername.innerText = u;
+      // Ẩn login, hiện app
+      loginSection.classList.remove('show');
+      appDiv.style.display = 'block';
+      sections.home.classList.add('show');
+
+      const userRef = doc(db, 'users', u);
+      // Lắng nghe user
+      onSnapshot(userRef, snap => {
+        if (snap.exists()) { state = { ...state, ...snap.data() }; updateUI(); }
+      });
+      const initial = await getDoc(userRef);
+      if (!initial.exists()) {
+        state.walletBalance = 1000000;
+        await setDoc(userRef, state);
+      }
+      // Lắng nghe products
+      onSnapshot(collection(db, 'products'), snap => renderProducts(snap.docs));
+    });
+
+    // Render & actions
+    function renderSessions(regs) {
+      listSessions.innerHTML = '';
+      (regs||[]).forEach(ts => {
+        const li = document.createElement('li');
+        li.textContent = new Date(ts).toLocaleString('vi-VN');
+        listSessions.appendChild(li);
+      });
+    }
+    function renderProducts(docs) {
+      productList.innerHTML = '';
+      docs.forEach(d => {
+        const data = d.data();
+        if (data.status === 'forSale') {
+          const li = document.createElement('li'); li.className = 'list-item';
+          const info = document.createElement('span'); info.textContent = `${data.name} - ${data.price} SML`;
+          const btn = document.createElement('button'); btn.textContent = 'Mua'; btn.onclick = () => buyProduct(d.id);
+          li.append(info, btn); productList.appendChild(li);
+        }
+      });
+    }
+    btnRegister.addEventListener('click', async () => {
+      if (state.walletBalance < 20000) return alert('Ví không đủ');
+      await updateDoc(doc(db,'users',currentUsername),{
+        walletBalance: state.walletBalance-20000,
+        registrations: arrayUnion(new Date().toISOString())
+      }); alert('Đăng ký thành công');
+    });
+    async function buyProduct(pid) {
+      const prodRef = doc(db,'products',pid);
+      const prodSnap = await getDoc(prodRef); const prod = prodSnap.data();
+      if (state.walletBalance < prod.price) return alert('Ví không đủ');
+      await updateDoc(doc(db,'users',currentUsername),{
+        walletBalance: state.walletBalance-prod.price,
+        userNFT: arrayUnion({ id: pid, name: prod.name, price: prod.price })
+      });
+      await updateDoc(prodRef,{ status:'owned', owner:currentUsername }); alert('Mua thành công');
+    }
+    // Nạp & rút modal
+    document.getElementById('btnDeposit').addEventListener('click',() => depositModal.classList.add('show'));
+    closeDeposit.addEventListener('click',() => depositModal.classList.remove('show'));
+    confirmDeposit.addEventListener('click',async()=>{
+      const amt=parseInt(inputDeposit.value);
+      if (amt>0) await updateDoc(doc(db,'users',currentUsername),{
+        walletBalance: state.walletBalance+amt,
+        walletHistory: arrayUnion({ type:'deposit', amount:amt, date:new Date().toISOString() })
+      }); depositModal.classList.remove('show');
+    });
+    document.getElementById('btnWithdraw').addEventListener('click',() => withdrawModal.classList.add('show'));
+    closeWithdraw.addEventListener('click',() => withdrawModal.classList.remove('show'));
+    confirmWithdraw.addEventListener('click',async()=>{
+      const amt=parseInt(inputWithdraw.value);
+      if (state.walletBalance<amt) return alert('Ví không đủ');
+      await updateDoc(doc(db,'users',currentUsername),{
+        walletBalance: state.walletBalance-amt,
+        walletHistory: arrayUnion({ type:'withdraw', amount:amt, date:new Date().toISOString() })
+      }); withdrawModal.classList.remove('show');
+    });
+
+    function updateUI() {
+      renderSessions(state.registrations);
+      walletBalanceEl.innerText = state.walletBalance;
+      walletHistoryEl.innerHTML = '';
+      (state.walletHistory||[]).forEach(h=>{
+        const li=document.createElement('li');
+        li.textContent=`${h.type} ${h.amount} - ${new Date(h.date).toLocaleString('vi-VN')}`;
+        walletHistoryEl.appendChild(li);
+      });
+      countRegs.innerText = (state.registrations||[]).length;
+      countNFT.innerText = (state.userNFT||[]).length;
+    }
+  </script>
+</body>
+</html>
